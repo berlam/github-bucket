@@ -89,8 +89,7 @@ The role must be configured with following permissions (replace `baxterthehacker
             "Action": [
                 "s3:GetObject",
                 "s3:PutObject",
-                "s3:DeleteObject",
-                "s3:GetObjectAcl"
+                "s3:DeleteObject"
             ],
             "Resource": "arn:aws:s3:::baxterthehacker/*"
         }
