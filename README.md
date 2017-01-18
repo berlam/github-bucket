@@ -152,3 +152,7 @@ See [LICENSE](LICENSE).
 
 - AWS SDK: [Apache License Version 2.0](https://github.com/aws/aws-sdk-java/blob/master/LICENSE.txt)
 - JGit: [EDL Version 1](https://github.com/eclipse/jgit/blob/master/LICENSE).
+
+## Links ##
+
+[Dynamic GitHub Actions with AWS Lambda](https://aws.amazon.com/de/blogs/compute/dynamic-github-actions-with-aws-lambda/)
