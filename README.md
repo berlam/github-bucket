@@ -7,7 +7,7 @@ Specify a branch, which will be unpacked to S3. You might publish a static websi
 Take full advantage of GitHub deploy keys, which can be setup per repository.
 Finally, pay only per use as this project uses [Lambda](https://aws.amazon.com/lambda/).
 
-## AWS services ##
+## Amazon Web Services ##
 - [IAM](https://aws.amazon.com/iam/): Identity and Access Management.
 - [SNS](https://aws.amazon.com/sns/): Used as Message Queue to trigger the Lambda function.
 - [Lambda](https://aws.amazon.com/lambda/): Used to sync the GitHub repository with S3.
@@ -18,7 +18,7 @@ Finally, pay only per use as this project uses [Lambda](https://aws.amazon.com/l
 
 ## Quickstart ##
 
-Your AWS services should use the same region! Take also a look at [Dynamic GitHub Actions with AWS Lambda](https://aws.amazon.com/de/blogs/compute/dynamic-github-actions-with-aws-lambda/) to get started with the Lambda deployment options.
+Your Amazon Web Services should use the same region! Take also a look at [Dynamic GitHub Actions with AWS Lambda](https://aws.amazon.com/de/blogs/compute/dynamic-github-actions-with-aws-lambda/) to get started with the Lambda deployment options.
 
 ![Architecture](/doc/architecture.png)
 
@@ -148,7 +148,7 @@ If you want to build from source, then just trigger [Maven](https://maven.apache
 
 ## How does it work? ##
 
-GitHub triggers AWS SNS after one of these [events](https://developer.github.com/v3/activity/events/types/). SNS triggers the Lambda function, which will check for Push-Events on the configured branch. If the branch matches, it will check the S3 bucket for the current state and update it with the GitHub state. The changes will be applied and pushed back to S3.
+GitHub triggers SNS after one of these [events](https://developer.github.com/v3/activity/events/types/). SNS triggers the Lambda function, which will check for Push-Events on the configured branch. If the branch matches, it will check the S3 bucket for the current state and update it with the GitHub state. The changes will be applied and pushed back to S3.
 
 ## Why Java? ##
 
