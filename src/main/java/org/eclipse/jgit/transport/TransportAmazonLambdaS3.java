@@ -3,6 +3,11 @@ package org.eclipse.jgit.transport;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.Md5Utils;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.detect.Detector;
+import org.apache.tika.io.FilenameUtils;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.metadata.Metadata;
 import org.eclipse.jgit.errors.NotSupportedException;
 import org.eclipse.jgit.errors.TransportException;
 import org.eclipse.jgit.internal.JGitText;
@@ -22,6 +27,8 @@ import static org.eclipse.jgit.transport.TransportAmazonS3.S3_SCHEME;
  * @version $Revision$ $Date$
  */
 public class TransportAmazonLambdaS3 extends Transport implements WalkTransport {
+
+    private static final Detector TIKA_DETECTOR = TikaConfig.getDefaultConfig().getDetector();
 
     private final AmazonS3 s3;
     private final String bucket;
@@ -188,6 +195,7 @@ public class TransportAmazonLambdaS3 extends Transport implements WalkTransport 
 
         @Override
         OutputStream writeFile(final String path, final ProgressMonitor monitor, final String monitorTask) throws IOException {
+            // TODO find a way to stream content to S3. Maybe direct HTTP-API call?
             return new ByteArrayOutputStream() {
 
                 @Override
@@ -199,11 +207,16 @@ public class TransportAmazonLambdaS3 extends Transport implements WalkTransport 
 
         @Override
         void writeFile(final String path, final byte[] data) throws IOException {
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentMD5(Md5Utils.md5AsBase64(data));
-            metadata.setContentLength(data.length);
-            try (InputStream input = new ByteArrayInputStream(data)) {
-                s3.putObject(bucket, resolveKey(path), input, metadata);
+            ObjectMetadata bucketMetadata = new ObjectMetadata();
+            bucketMetadata.setContentMD5(Md5Utils.md5AsBase64(data));
+            bucketMetadata.setContentLength(data.length);
+            // Give Tika a few hints for the content detection
+            Metadata tikaMetadata = new Metadata();
+            tikaMetadata.set(Metadata.RESOURCE_NAME_KEY, FilenameUtils.getName(FilenameUtils.normalize(path)));
+            // Fire!
+            try (InputStream bis = TikaInputStream.get(data, tikaMetadata)) {
+                bucketMetadata.setContentType(TIKA_DETECTOR.detect(bis, tikaMetadata).toString());
+                s3.putObject(bucket, resolveKey(path), bis, bucketMetadata);
             }
         }
 

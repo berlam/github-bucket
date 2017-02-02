@@ -53,15 +53,17 @@ Create a new bucket (or choose a existing empty bucket). That's it!
 
 ### Lambda ###
 
+Download the release from the [release section](https://github.com/berlam/github-s3-deploy/releases).
 Create a new blank Lambda function. During creation also add the created SNS topic as trigger for your function.
 Name the function as you like, e.g. `StaticSiteDeployer` and choose the runtime Java 8 (or higher). Following environment variables should be changed:
 
 - `env_branch`: The branch to watch, default `master`.
-- `env_remote`: The name of the created remote, default `origin`.
 - `env_bucket`: The bucket to push to, e.g. `baxterthehacker`.
 - `env_github`: The GitHub repository to pull from, e.g. `baxterthehacker/public-repo.git`.
 
-The handler for Lambda must be configured to: `net.berla.aws.Lambda`.
+You can also [change the environment variables](http://docs.aws.amazon.com/lambda/latest/dg/env_variables.html) from the AWS console afterwards.
+
+The handler class for Lambda must be configured to: `net.berla.aws.Lambda`.
 The memory size should at least be 192 MB and can be increased on OutOfMemory-Exceptions. Adjust the timeout to at least one minute.
 The role must be configured with following permissions (replace `baxterthehacker` with your bucket).
 ```JSON
@@ -97,6 +99,16 @@ The role must be configured with following permissions (replace `baxterthehacker
 }
 ```
 
+#### Note ####
+
+Java isn't as good as other languages in cold start. It takes a few seconds for the application to boot (~5s).
+After that, the repository is initially cloned, which may take longer than 1 minute (depends on repository size).
+In this case you can increase the lambda timeout or upload the initial working tree by yourself on the first run.
+All further uploads will be checked file by file against their MD5 checksum.
+
+Files are currently processed inside memory. If you have large files stored inside your repository, you will need to increase the memory size even further.
+It is planned to process large files inside the lambda temp directory, to save some memory. But this isn't implemented yet.
+
 ### GitHub ###
 
 Create a deploy key and answer the questions after submitting the command:
@@ -130,16 +142,22 @@ You can start a local debugging session and start the main method in [net.berla.
 
 You can configure the test runtime by changing the [environment properties](src/main/resources/env.properties) or by setting the already mentioned system variables.
 
+## Building ##
+
+If you want to build from source, then just trigger [Maven](https://maven.apache.org/) with `mvn clean package` from inside the project root directory. The JAR will be created as `target/github-s3-deploy-*.jar`.
+
 ## How does it work? ##
 
 GitHub triggers AWS SNS after one of these [events](https://developer.github.com/v3/activity/events/types/). SNS triggers the Lambda function, which will check for Push-Events on the configured branch. If the branch matches, it will check the S3 bucket for the current state and update it with the GitHub state. The changes will be applied and pushed back to S3.
 
 ## Why Java? ##
 
-First of all I use the language and technology which fits best to the actual problem. Lambda officially supports just a few technologies and at the time of writing these were Node.js, Python, C# and Java.
+Lambda officially supports just a few technologies and at the time of writing these were Node.js, Python, C# and Java.
 There are some workarounds for other languages, like my personal preference Go, but as we do not control the underlying system this could fail in the future.
 
-Furthermore there is a great rebuild of Git for Java by the Eclipse Project which is called jgit. This allowed me to use the much better deployment keys instead of the plain GitHub API, which also has less features and requires you to add a personal access token for your whole account and not just the repository. Last but not least the deployment key can be readonly.
+Furthermore there is a great implementation of Git completely written in Java by the Eclipse Project which is called jgit.
+This allowed me to use the much better deployment keys instead of the plain GitHub API, which also has less features and requires you to add a personal access token for your whole account and not just the repository.
+Last but not least the deployment key can be readonly.
 
 ## Credits ##
 
@@ -150,4 +168,5 @@ This project was created by [Matthias Berla](https://github.com/berlam).
 See [LICENSE](LICENSE).
 
 - AWS SDK: [Apache License Version 2.0](https://github.com/aws/aws-sdk-java/blob/master/LICENSE.txt)
-- JGit: [EDL Version 1](https://github.com/eclipse/jgit/blob/master/LICENSE).
+- Tika: [Apache License Version 2.0](https://github.com/apache/tika/blob/master/LICENSE.txt)
+- JGit: [EDL Version 1.0](https://github.com/eclipse/jgit/blob/master/LICENSE)

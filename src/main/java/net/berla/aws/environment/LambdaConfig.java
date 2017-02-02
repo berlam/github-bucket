@@ -1,7 +1,7 @@
 package net.berla.aws.environment;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.util.StringUtils;
 import net.berla.aws.Config;
@@ -29,12 +29,11 @@ public final class LambdaConfig implements Config {
     private static final LambdaConfig INSTANCE = new LambdaConfig();
     private static final TransportProtocol PROTO = new TransportAmazonLambdaS3.TransportProtocolS3(LambdaConfig.get().client);
 
-    private static final String ENV_REMOTE = "env.remote";
     private static final String ENV_BRANCH = "env.branch";
     private static final String ENV_BUCKET = "env.bucket";
     private static final String ENV_GITHUB = "env.github";
     private final Properties props = new Properties();
-    private final AmazonS3 client = new AmazonS3Client();
+    private final AmazonS3 client = AmazonS3ClientBuilder.defaultClient();
     private final TransportConfigCallback authentication;
     private final Remote remote;
     private final Branch branch;
@@ -48,12 +47,11 @@ public final class LambdaConfig implements Config {
         catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
-        overwriteWithSystemProperty(ENV_REMOTE);
         overwriteWithSystemProperty(ENV_BRANCH);
         overwriteWithSystemProperty(ENV_BUCKET);
         overwriteWithSystemProperty(ENV_GITHUB);
 
-        this.remote = new Remote(props.getProperty(ENV_REMOTE, Constants.DEFAULT_REMOTE_NAME));
+        this.remote = new Remote(Constants.DEFAULT_REMOTE_NAME);
         this.branch = new Branch(props.getProperty(ENV_BRANCH, Constants.MASTER));
         this.authentication = new SecureShellAuthentication(new Bucket(props.getProperty(ENV_BUCKET)), client);
     }

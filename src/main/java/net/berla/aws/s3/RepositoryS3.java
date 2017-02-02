@@ -13,6 +13,11 @@ import net.berla.aws.git.Branch;
 import net.berla.aws.git.SyncableRepository;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.detect.Detector;
+import org.apache.tika.io.FilenameUtils;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.metadata.Metadata;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
@@ -25,7 +30,6 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.DigestInputStream;
@@ -46,6 +50,7 @@ import static org.eclipse.jgit.lib.FileMode.TYPE_MASK;
 public class RepositoryS3 implements SyncableRepository {
 
     private static final Logger LOG = LoggerFactory.getLogger(RepositoryS3.class);
+    private static final Detector TIKA_DETECTOR = TikaConfig.getDefaultConfig().getDetector();
 
     private final AmazonS3 s3;
     private final Bucket bucket;
@@ -122,7 +127,7 @@ public class RepositoryS3 implements SyncableRepository {
     private boolean walk(Iterator<S3ObjectSummary> iter, ObjectId file, String path) throws IOException {
         byte[] content;
         byte[] newHash;
-        LOG.info("Check file: {}", path);
+        LOG.debug("Start processing file: {}", path);
         try (DigestInputStream is = new DigestInputStream(repository.open(file).openStream(), DigestUtils.getMd5Digest())) {
             // Get content
             content = IOUtils.toByteArray(is);
@@ -131,15 +136,20 @@ public class RepositoryS3 implements SyncableRepository {
         }
         if (isUploadFile(iter, path, Hex.encodeHexString(newHash))) {
             LOG.info("Uploading file: {}", path);
-            try (InputStream bis = new ByteArrayInputStream(content)) {
-                ObjectMetadata metadata = new ObjectMetadata();
-                metadata.setContentMD5(Base64.encodeAsString(newHash));
-                metadata.setContentLength(content.length);
-                s3.putObject(bucket.getName(), path, bis, metadata);
+            ObjectMetadata bucketMetadata = new ObjectMetadata();
+            bucketMetadata.setContentMD5(Base64.encodeAsString(newHash));
+            bucketMetadata.setContentLength(content.length);
+            // Give Tika a few hints for the content detection
+            Metadata tikaMetadata = new Metadata();
+            tikaMetadata.set(Metadata.RESOURCE_NAME_KEY, FilenameUtils.getName(FilenameUtils.normalize(path)));
+            // Fire!
+            try (InputStream bis = TikaInputStream.get(content, tikaMetadata)) {
+                bucketMetadata.setContentType(TIKA_DETECTOR.detect(bis, tikaMetadata).toString());
+                s3.putObject(bucket.getName(), path, bis, bucketMetadata);
                 return true;
             }
         }
-        LOG.info("Content does not differ: {}", path);
+        LOG.info("Skipping file (same checksum): {}", path);
         return false;
     }
 
