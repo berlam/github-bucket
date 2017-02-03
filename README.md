@@ -1,4 +1,4 @@
-github-s3-deploy
+github-bucket
 ================
 
 Deploy every [GitHub](https://github.com/) repository securely with [Git](https://git-scm.com/) to your [S3](https://aws.amazon.com/s3/) bucket and keep it automatically up to date on push.
@@ -53,7 +53,7 @@ Create a new bucket (or choose a existing empty bucket). That's it!
 
 ### Lambda ###
 
-Download the release from the [release section](https://github.com/berlam/github-s3-deploy/releases).
+Download the latest release from the [release section](https://github.com/berlam/github-bucket/releases/latest).
 Create a new blank Lambda function. During creation also add the created SNS topic as trigger for your function.
 Name the function as you like, e.g. `StaticSiteDeployer` and choose the runtime Java 8 (or higher). Following environment variables should be changed:
 
@@ -102,7 +102,7 @@ The role must be configured with following permissions (replace `baxterthehacker
 #### Note ####
 
 Java isn't as good as other languages in cold start. It takes a few seconds for the application to boot (~5s).
-After that, the repository is initially cloned, which may take longer than 1 minute (depends on repository size).
+After that, the repository is initially cloned, which may take longer than one minute (depends on repository size).
 In this case you can increase the lambda timeout or upload the initial working tree by yourself on the first run.
 All further uploads will be checked file by file against their MD5 checksum.
 
@@ -144,7 +144,7 @@ You can configure the test runtime by changing the [environment properties](src/
 
 ## Building ##
 
-If you want to build from source, then just trigger [Maven](https://maven.apache.org/) with `mvn clean package` from inside the project root directory. The JAR will be created as `target/github-s3-deploy-*.jar`.
+If you want to build from source, then just trigger [Maven](https://maven.apache.org/) with `mvn clean package` from inside the project root directory. The JAR will be created as `target/github-bucket-*.jar`.
 
 ## How does it work? ##
 

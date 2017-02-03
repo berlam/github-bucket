@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>net.berla.aws</groupId>
-    <artifactId>github-s3-deploy</artifactId>
+    <artifactId>github-bucket</artifactId>
     <version>1.1</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -18,9 +18,9 @@
     </properties>
     <packaging>jar</packaging>
 
-    <name>GitHub-S3-Deploy</name>
-    <description>Transfer files from a GitHub repository to a S3 bucket using Git.</description>
-    <url>https://github.com/berlam/github-s3-deploy</url>
+    <name>GitHub-Bucket</name>
+    <description>Transfer your GitHub repository to a S3 bucket using Git and deploy keys instead of personal access tokens.</description>
+    <url>https://github.com/berlam/github-bucket</url>
 
     <developers>
         <developer>
