@@ -161,7 +161,7 @@ Last but not least the deployment key can be readonly.
 
 ## Credits ##
 
-This project was created by [Matthias Berla](https://github.com/berlam).
+This project was created by [@berlam](https://github.com/berlam).
 
 ## License ##
 

@@ -10,7 +10,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <slf4j.version>1.7.2</slf4j.version>
         <jgit.version>4.6.0.201612231935-r</jgit.version>
-        <tika.version>1.14</tika.version>
+        <tika.version>1.19.1</tika.version>
         <aws-java-sdk.version>1.11.86</aws-java-sdk.version>
         <aws-lambda-java-core.version>1.1.0</aws-lambda-java-core.version>
         <aws-lambda-java-events.version>1.3.0</aws-lambda-java-events.version>
@@ -21,14 +21,6 @@
     <name>GitHub-Bucket</name>
     <description>Transfer your GitHub repository to a S3 bucket using Git and deploy keys instead of personal access tokens.</description>
     <url>https://github.com/berlam/github-bucket</url>
-
-    <developers>
-        <developer>
-            <id>berlam</id>
-            <name>Matthias Berla</name>
-            <email>matthias@berla.net</email>
-        </developer>
-    </developers>
 
     <dependencies>
         <dependency>
